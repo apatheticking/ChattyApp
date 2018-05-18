@@ -5,53 +5,67 @@ import MessageList from './MessageList.jsx';
 import NavBar from './NavBar.jsx';
 
 class App extends Component {
-
   constructor(props) {
     super(props);
-
     this.state = {
       currentUser: {name: "Bob"},
-      messages: [
-        {
-          id: 123,
-          username: "Bob",
-          content: "Has anyone seen my marbles?",
-        },
-        {
-          id: 341,
-          username: "Anonymous",
-          content: "No, I think you lost them. You lost your marbles Bob. You lost them for good."
-        }
-      ]
-    }
+      messages: [],
+      clients: 0
+    };
   }
 
   componentDidMount() {
-    console.log("componentDidMount <App />");
-    setTimeout(() => {
-      console.log("Simulating incoming message");
-      const newMessage = {id: 3, username: "Michelle", content: "Hello there!"};
-      const messages = this.state.messages.concat(newMessage)
-      this.setState({messages: messages})
-    }, 3000);
+    const localhost = "ws://localhost:3001";
+    this.socket = new WebSocket(localhost);
+    console.log("Connected to server");
+
+    //when a message is sent back from the server
+    this.socket.onmessage = (event) => {
+      let message = JSON.parse(event.data);
+      if(message.type === "clients"){
+        this.setState({clients: message.number});
+      } else {
+        this.setState(previousState => ({
+          messages: [...previousState.messages, message],
+        }));
+      }
+    };
   }
 
   handleMessageSubmit = (message) => {
+    let imageCheck = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|JPG|GIF|PNG)/g;
+    let type = (imageCheck.test(message) ? "imageMessage" : "postMessage");
+
     const newMessage = {
-      id: Math.floor((Math.random() * 100) + 1),
+      type: type,
       username: this.state.currentUser.name,
       content: message
     }
-    this.state.messages.push(newMessage);
-    this.setState(this.state.messages);
+    //sends message to server
+    this.socket.send(JSON.stringify(newMessage));
+  }
+
+  handleUserNameSubmit = (userName) => {
+    const contentMessage = `${this.state.currentUser.name} has change their name to ${userName}`;
+    const newUser = {name: userName}
+    const newMessage = {
+      type: "postNotification",
+      username: userName,
+      content: contentMessage
+    }
+    this.setState({currentUser: newUser});
+    this.socket.send(JSON.stringify(newMessage));
   }
 
   render() {
     return (
       <div>
-        <NavBar />
+        <NavBar users={this.state.clients}/>
         <MessageList messages={this.state.messages}/>
-        <ChatBar currentUser={this.state.currentUser} onMessageSubmit={this.handleMessageSubmit}/>
+        <ChatBar currentUser={this.state.currentUser}
+          onMessageSubmit={this.handleMessageSubmit}
+          onUserNameSubmit={this.handleUserNameSubmit}
+        />
       </div>
     );
   }

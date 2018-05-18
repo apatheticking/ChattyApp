@@ -1,29 +1,20 @@
 import React, { Component } from 'react';
 import Message from './Message.jsx';
-
-// class MessageList extends Component {
-
-//   constructor(props) {
-//     super(props);
-//   }
-
-//   render(){
-//     return(
-//       <div className="messages">
-//         {
-//           this.props.messages.map((message) => {
-//             <Message message={message} />
-//           })
-//         }
-//       </div>
-//     );
-//   }
-// }
+import Notification from './Notification.jsx';
+import Image from './Image.jsx'
 
 function MessageList (props){
+
   const messageListItem = props.messages.map((message, i) => {
-           return <Message key={i} messageContent={message} test="this works"/>
-        });
+    console.log(message);
+    if(message.type === "incomingMessage"){
+      return <Message key={i} messageContent={message}/>
+    } else if (message.type === "incomingNotification"){
+      return <Notification key={i} messageContent={message}/>
+    } else if (message.type === "incomingImage"){
+      return <Image key={i} messageContent={message}/>
+    }
+  });
 
   return (
     <div className="messages">
