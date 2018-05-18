@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+//styling to move the user count to the right of the navbar
 const imageCss = {
   'max-width': '60%'
 }

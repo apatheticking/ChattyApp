@@ -4,9 +4,10 @@ import Notification from './Notification.jsx';
 import Image from './Image.jsx'
 
 function MessageList (props){
-
+  //this array.map handles the incoming messages from the server
+  //depending on what type of message is coming in it render the
+  //appropriate component
   const messageListItem = props.messages.map((message, i) => {
-    console.log(message);
     if(message.type === "incomingMessage"){
       return <Message key={i} messageContent={message}/>
     } else if (message.type === "incomingNotification"){

@@ -14,28 +14,34 @@ class App extends Component {
     };
   }
 
+//----------Life cycle functions--------------------
   componentDidMount() {
+    //creates the connection to the server
     const localhost = "ws://localhost:3001";
     this.socket = new WebSocket(localhost);
     console.log("Connected to server");
 
-    //when a message is sent back from the server
+    //when a message is sent back from the server it will handle either the number
+    //of clients currently on the server or the message that will be added to the state
     this.socket.onmessage = (event) => {
       let message = JSON.parse(event.data);
       if(message.type === "clients"){
-        this.setState({clients: message.number});
+        this.setState({clients: message.number});//updates number of users
       } else {
         this.setState(previousState => ({
-          messages: [...previousState.messages, message],
+          messages: [...previousState.messages, message],//updates the message array in state
         }));
       }
     };
   }
 
+//------------------User input functions--------------------------
+  //handles the input from chatbar component
   handleMessageSubmit = (message) => {
+    //regular expression to handle if the message sent by the user is an image link or not
     let imageCheck = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|JPG|GIF|PNG)/g;
     let type = (imageCheck.test(message) ? "imageMessage" : "postMessage");
-
+    //creates an object to be sent to the server
     const newMessage = {
       type: type,
       username: this.state.currentUser.name,
@@ -45,6 +51,8 @@ class App extends Component {
     this.socket.send(JSON.stringify(newMessage));
   }
 
+  //handles the user changing their screen name
+  //creates an object to be sent to the server and updates the state of ther user name
   handleUserNameSubmit = (userName) => {
     const contentMessage = `${this.state.currentUser.name} has change their name to ${userName}`;
     const newUser = {name: userName}
@@ -56,13 +64,14 @@ class App extends Component {
     this.setState({currentUser: newUser});
     this.socket.send(JSON.stringify(newMessage));
   }
-
+//---------------Render--------------------------
   render() {
     return (
       <div>
         <NavBar users={this.state.clients}/>
         <MessageList messages={this.state.messages}/>
-        <ChatBar currentUser={this.state.currentUser}
+        <ChatBar
+          currentUser={this.state.currentUser}
           onMessageSubmit={this.handleMessageSubmit}
           onUserNameSubmit={this.handleUserNameSubmit}
         />

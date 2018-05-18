@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-
+//positions the number of online users to the right side of the navbar
 const usersCount = {
   float: 'right'
 }
